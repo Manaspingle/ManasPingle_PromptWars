@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Sun, User as UserIcon, LogOut, Sparkles } from 'lucide-react';
+import { Moon, Sun, User as UserIcon, LogOut, Sparkles, Clock } from 'lucide-react';
 import { ThinkLensLogo } from './ThinkLensLogo';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -8,11 +8,13 @@ interface NavbarProps {
   currentView?: 'landing' | 'engine';
   onNavigate: (view: 'landing' | 'engine') => void;
   onOpenAuth: () => void;
+  onOpenHistory?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onNavigate,
   onOpenAuth,
+  onOpenHistory,
 }) => {
   const { user, userName, isGuest, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
@@ -67,6 +69,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* User Auth Info / Login Button */}
           {user ? (
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onOpenHistory}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-850 transition-colors shadow-sm"
+                title="View Saved Reasoning Audits"
+              >
+                <Clock className="w-3.5 h-3.5 text-blue-500" />
+                <span className="hidden sm:inline">Saved Audits</span>
+              </button>
               <div className="flex items-center gap-2 py-1 px-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-200">
                 <UserIcon className="w-3.5 h-3.5 text-blue-500" />
                 <span className="max-w-[140px] truncate font-medium">

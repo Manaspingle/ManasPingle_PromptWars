@@ -2,26 +2,31 @@ import { useState, useRef, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { LandingPage } from './components/LandingPage';
 import { AuthModal } from './components/AuthModal';
+import { AuditHistoryModal } from './components/AuditHistoryModal';
 import { DecisionForm } from './components/DecisionForm';
 import { AnalysisResults } from './components/AnalysisResults';
 import { LoadingState } from './components/LoadingState';
 import { ErrorMessage } from './components/ErrorMessage';
 import { useAnalysis } from './hooks/useAnalysis';
 import { useAuth } from './context/AuthContext';
-import { DecisionInput } from './types/analysis';
-import { Sparkles, Shield } from 'lucide-react';
+import { DecisionInput, AnalysisResult } from './types/analysis';
+import { saveAuditToHistory, SavedAuditItem } from './services/history';
+import { Sparkles, Shield, RotateCcw } from 'lucide-react';
 
 export function App() {
   const [currentView, setCurrentView] = useState<'landing' | 'engine'>('landing');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const { user, userName } = useAuth();
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [selectedAudit, setSelectedAudit] = useState<{ input: DecisionInput; result: AnalysisResult } | null>(null);
 
+  const { user, userName } = useAuth();
   const { status, result, error, analyze, reset } = useAnalysis();
   const lastInputRef = useRef<DecisionInput | null>(null);
   const resultsContainerRef = useRef<HTMLDivElement | null>(null);
 
   const handleSubmit = (data: DecisionInput) => {
     lastInputRef.current = data;
+    setSelectedAudit(null);
     analyze(data);
   };
 
@@ -33,6 +38,7 @@ export function App() {
 
   const handleReset = () => {
     lastInputRef.current = null;
+    setSelectedAudit(null);
     reset();
   };
 
@@ -44,6 +50,13 @@ export function App() {
       setCurrentView('landing');
     }
   }, [user]);
+
+  // Auto-sync completed audits to history (Firestore + local storage)
+  useEffect(() => {
+    if (status === 'success' && result && lastInputRef.current) {
+      saveAuditToHistory(user?.uid || 'guest', lastInputRef.current.decision, result);
+    }
+  }, [status, result, user]);
 
   const handleNavigate = (view: 'landing' | 'engine') => {
     if (view === 'engine' && !user) {
@@ -58,14 +71,27 @@ export function App() {
   };
 
   useEffect(() => {
-    if (status === 'success' && resultsContainerRef.current) {
+    if ((status === 'success' || selectedAudit) && resultsContainerRef.current) {
       const heading = resultsContainerRef.current.querySelector<HTMLElement>('h2');
       heading?.focus();
     }
-  }, [status]);
+  }, [status, selectedAudit]);
 
-  const showForm = status === 'idle' || status === 'error';
-  const showResults = status === 'success' && result !== null;
+  const handleSelectPastAudit = (item: SavedAuditItem) => {
+    setSelectedAudit({
+      input: {
+        decision: item.decision,
+        context: 'Loaded from saved audit history',
+        reasoning: 'Archived reasoning record',
+      },
+      result: item.result,
+    });
+  };
+
+  const activeResult = selectedAudit ? selectedAudit.result : result;
+  const activeInput = selectedAudit ? selectedAudit.input : lastInputRef.current;
+  const showResults = Boolean(activeResult);
+  const showForm = !showResults && (status === 'idle' || status === 'error');
   const isLoading = status === 'loading';
 
   return (
@@ -83,6 +109,7 @@ export function App() {
         currentView={currentView}
         onNavigate={handleNavigate}
         onOpenAuth={() => setIsAuthModalOpen(true)}
+        onOpenHistory={() => setIsHistoryModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -117,19 +144,38 @@ export function App() {
               </div>
               <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                 <Sparkles className="w-3 h-3 text-blue-500" />
-                <span>Gemini 3.8 Flash</span>
+                <span>Gemini Flash</span>
               </div>
             </div>
 
+            {/* Past Audit Banner if loaded from history */}
+            {selectedAudit && (
+              <div className="mb-6 p-4 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/70 dark:bg-blue-950/40 flex items-center justify-between text-xs">
+                <span className="text-blue-700 dark:text-blue-300 font-semibold">
+                  Viewing archived audit: "{selectedAudit.input.decision}"
+                </span>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="inline-flex items-center gap-1 font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Start New Audit</span>
+                </button>
+              </div>
+            )}
+
             {/* Introduction Card */}
-            <div className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 p-6 shadow-sm backdrop-blur-sm">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                Audit Your Reasoning
-              </h2>
-              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                ThinkLens decomposes your logic without bias. Share what you are weighing and why — our engine separates stated facts from unstated assumptions, flags blind spots, and generates the counterfactual Flip Test. It will never tell you what to choose.
-              </p>
-            </div>
+            {!showResults && (
+              <div className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 p-6 shadow-sm backdrop-blur-sm">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                  Audit Your Reasoning
+                </h2>
+                <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                  ThinkLens decomposes your logic without bias. Share what you are weighing and why — our engine separates stated facts from unstated assumptions, flags blind spots, and generates the counterfactual Flip Test. It will never tell you what to choose.
+                </p>
+              </div>
+            )}
 
             {/* Decision Input Form */}
             {showForm && (
@@ -161,11 +207,11 @@ export function App() {
             {isLoading && <LoadingState />}
 
             {/* Results Display */}
-            {showResults && (
+            {showResults && activeResult && (
               <div ref={resultsContainerRef} className="space-y-6">
                 <AnalysisResults
-                  result={result}
-                  decisionInput={lastInputRef.current}
+                  result={activeResult}
+                  decisionInput={activeInput}
                 />
                 <div className="flex justify-center pt-4">
                   <button
@@ -192,9 +238,9 @@ export function App() {
           <div className="flex items-center gap-4">
             <span>Google Cloud Run</span>
             <span>•</span>
-            <span>Firebase Auth</span>
+            <span>Firebase Auth & Firestore</span>
             <span>•</span>
-            <span>Gemini 3.8 Flash</span>
+            <span>Gemini Flash</span>
           </div>
         </div>
       </footer>
@@ -207,6 +253,14 @@ export function App() {
           setIsAuthModalOpen(false);
           setCurrentView('engine');
         }}
+      />
+
+      {/* Audit History Modal */}
+      <AuditHistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
+        userId={user?.uid || 'guest'}
+        onSelectAudit={handleSelectPastAudit}
       />
     </div>
   );

@@ -13,4 +13,19 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    target: 'esnext',
+    sourcemap: false,
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+          'vendor-pdf': ['jspdf', 'html2canvas', 'dompurify'],
+          'vendor-icons': ['lucide-react'],
+        },
+      },
+    },
+  },
 });
