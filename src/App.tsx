@@ -9,12 +9,12 @@ import { ErrorMessage } from './components/ErrorMessage';
 import { useAnalysis } from './hooks/useAnalysis';
 import { useAuth } from './context/AuthContext';
 import { DecisionInput } from './types/analysis';
-import { Sparkles, ArrowLeft, Shield } from 'lucide-react';
+import { Sparkles, Shield } from 'lucide-react';
 
 export function App() {
   const [currentView, setCurrentView] = useState<'landing' | 'engine'>('landing');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, userName } = useAuth();
 
   const { status, result, error, analyze, reset } = useAnalysis();
   const lastInputRef = useRef<DecisionInput | null>(null);
@@ -36,17 +36,22 @@ export function App() {
     reset();
   };
 
-  // Route Guard: enforce that engine is strictly accessible only when authenticated
+  // Enforce: After login/signup, the user sees engine; overview page is only accessible after logging out
   useEffect(() => {
-    if (!user && currentView === 'engine') {
+    if (user && currentView !== 'engine') {
+      setCurrentView('engine');
+    } else if (!user && currentView !== 'landing') {
       setCurrentView('landing');
-      setIsAuthModalOpen(true);
     }
-  }, [user, currentView]);
+  }, [user]);
 
   const handleNavigate = (view: 'landing' | 'engine') => {
     if (view === 'engine' && !user) {
       setIsAuthModalOpen(true);
+      return;
+    }
+    // If logged in, the user stays in engine; to see overview, they must log out
+    if (view === 'landing' && user) {
       return;
     }
     setCurrentView(view);
@@ -95,20 +100,24 @@ export function App() {
           />
         ) : (
           <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
-            {/* Engine Subheader / Back button */}
-            <div className="mb-6 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setCurrentView('landing')}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Back to Overview</span>
-              </button>
-
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-semibold">
-                <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-                <span>Reasoning Audit Engine</span>
+            {/* Top Welcome Banner with Name entered at registration */}
+            <div className="mb-6 rounded-2xl bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-purple-500/10 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-purple-950/40 border border-blue-200/80 dark:border-blue-900/60 p-4 sm:p-5 flex items-center justify-between shadow-sm">
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-base flex items-center justify-center shadow-md shadow-blue-500/20">
+                  {userName ? userName.charAt(0).toUpperCase() : 'U'}
+                </div>
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                    Welcome back, <span className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-300 bg-clip-text text-transparent font-extrabold">{userName}</span>
+                  </h2>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                    Your objective reasoning audit workspace is active. Input your decision dilemma below.
+                  </p>
+                </div>
+              </div>
+              <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                <Sparkles className="w-3 h-3 text-blue-500" />
+                <span>Gemini 3.8 Flash</span>
               </div>
             </div>
 

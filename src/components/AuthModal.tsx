@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, AlertCircle, ArrowRight } from 'lucide-react';
+import { X, Sparkles, AlertCircle, ArrowRight, User as UserIcon, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface AuthModalProps {
@@ -16,6 +16,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onSuccess,
 }) => {
   const [mode, setMode] = useState<'signin' | 'signup'>(defaultMode);
+  const [name, setName] = useState('');
+  const [age, setAge] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -28,13 +30,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (mode === 'signup') {
+      if (!name.trim()) {
+        setError('Please enter your full name.');
+        return;
+      }
+      const ageNum = parseInt(age, 10);
+      if (isNaN(ageNum) || ageNum < 13 || ageNum > 120) {
+        setError('Please enter a valid age between 13 and 120.');
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
       if (mode === 'signin') {
         await signInWithEmail(email, password);
       } else {
-        await signUpWithEmail(email, password);
+        await signUpWithEmail(name, parseInt(age, 10), email, password);
       }
       onClose();
       onSuccess?.();
@@ -74,7 +89,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const handleGuestAccess = async () => {
     setLoading(true);
     try {
-      await signInAsGuest();
+      await signInAsGuest('Evaluator Guest');
       onClose();
       onSuccess?.();
     } catch {
@@ -127,7 +142,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             className={`flex-1 py-1.5 text-sm font-semibold rounded-md transition-all ${
               mode === 'signin'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
             Sign In
@@ -141,7 +156,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             className={`flex-1 py-1.5 text-sm font-semibold rounded-md transition-all ${
               mode === 'signup'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
             Create Account
@@ -155,7 +170,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           disabled={loading}
           className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          <svg className="w-4 h-4" viewBox="0 0 24 24">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -196,13 +211,69 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
         )}
 
-        {/* Email & Password Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Auth Form */}
+        <form onSubmit={handleSubmit} className="space-y-3.5">
+          {mode === 'signup' && (
+            <>
+              <div>
+                <label
+                  htmlFor="signup-name"
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                >
+                  Full Name
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <UserIcon className="w-4 h-4" />
+                  </div>
+                  <input
+                    id="signup-name"
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Alex Mercer"
+                    className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="signup-age"
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                >
+                  Age
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <Calendar className="w-4 h-4" />
+                  </div>
+                  <input
+                    id="signup-age"
+                    type="number"
+                    required
+                    min={13}
+                    max={120}
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    placeholder="e.g. 24"
+                    className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label
+              htmlFor="auth-email"
+              className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+            >
               Email address
             </label>
             <input
+              id="auth-email"
               type="email"
               required
               value={email}
@@ -213,10 +284,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label
+              htmlFor="auth-password"
+              className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+            >
               Password
             </label>
             <input
+              id="auth-password"
               type="password"
               required
               minLength={6}
@@ -230,7 +305,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           >
             {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
             <ArrowRight className="w-4 h-4" />

@@ -30,6 +30,10 @@ export function createApp(): Express {
             return callback(null, true);
           }
         }
+        // Automatically allow Vercel deployment domains
+        if (/^https:\/\/([a-zA-Z0-9_-]+\.)*vercel\.app$/.test(origin)) {
+          return callback(null, true);
+        }
         if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
           return callback(null, true);
         }

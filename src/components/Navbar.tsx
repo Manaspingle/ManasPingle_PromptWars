@@ -5,58 +5,50 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
 interface NavbarProps {
-  currentView: 'landing' | 'engine';
+  currentView?: 'landing' | 'engine';
   onNavigate: (view: 'landing' | 'engine') => void;
   onOpenAuth: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  currentView,
   onNavigate,
   onOpenAuth,
 }) => {
-  const { user, isGuest, logout } = useAuth();
+  const { user, userName, isGuest, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+
+  const handleLogoClick = () => {
+    if (!user) {
+      onNavigate('landing');
+    } else {
+      onNavigate('engine');
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md transition-colors">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        {/* Logo click returns to landing */}
+        {/* Logo */}
         <button
           type="button"
-          onClick={() => onNavigate('landing')}
+          onClick={handleLogoClick}
           className="focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-1"
           aria-label="ThinkLens Home"
         >
           <ThinkLensLogo size="md" />
         </button>
 
-        {/* Center Nav Links - Engine only visible when logged in */}
+        {/* Center Nav Status */}
         <nav className="flex items-center gap-1 bg-slate-100/80 dark:bg-slate-900/80 p-1 rounded-xl border border-slate-200/60 dark:border-slate-800/60 backdrop-blur-sm">
-          <button
-            type="button"
-            onClick={() => onNavigate('landing')}
-            className={`px-3 sm:px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-              currentView === 'landing'
-                ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            Overview
-          </button>
-          {user && (
-            <button
-              type="button"
-              onClick={() => onNavigate('engine')}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                currentView === 'engine'
-                  ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-              <span>Reasoning Engine</span>
-            </button>
+          {!user ? (
+            <span className="px-3 sm:px-4 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm">
+              Overview
+            </span>
+          ) : (
+            <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-blue-500 animate-pulse" />
+              <span>Reasoning Workspace</span>
+            </div>
           )}
         </nav>
 
@@ -72,25 +64,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
           </button>
 
-          {/* Engine Direct Button (only when logged in) */}
-          {user && currentView === 'landing' && (
-            <button
-              type="button"
-              onClick={() => onNavigate('engine')}
-              className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-500/20 transition-colors"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Launch Engine</span>
-            </button>
-          )}
-
           {/* User Auth Info / Login Button */}
           {user ? (
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2 py-1 px-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-200">
                 <UserIcon className="w-3.5 h-3.5 text-blue-500" />
-                <span className="max-w-[120px] truncate font-medium">
-                  {user.displayName || user.email?.split('@')[0] || (isGuest ? 'Guest' : 'User')}
+                <span className="max-w-[140px] truncate font-medium">
+                  {userName}
                 </span>
                 {isGuest && (
                   <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
@@ -101,18 +81,19 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 type="button"
                 onClick={logout}
-                className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
-                title="Sign out"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+                title="Log out and return to overview"
                 aria-label="Sign out"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Logout</span>
               </button>
             </div>
           ) : (
             <button
               type="button"
               onClick={onOpenAuth}
-              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-sm"
             >
               Sign In
             </button>

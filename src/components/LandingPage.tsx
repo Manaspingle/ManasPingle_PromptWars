@@ -10,6 +10,7 @@ import {
   Cpu,
   ChevronRight,
   LogIn,
+  Layers,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { ThinkLensLogo } from './ThinkLensLogo';
@@ -52,7 +53,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* ============================================================== */}
       {/* HERO SECTION                                                  */}
       {/* ============================================================== */}
-      <section className="relative pt-12 pb-16 sm:pt-20 sm:pb-24">
+      <section className="relative pt-12 pb-16 sm:pt-20 sm:pb-20">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 text-center">
           {/* Google Ecosystem Pill Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50/90 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800/80 text-blue-700 dark:text-blue-300 text-xs font-semibold mb-8 shadow-sm backdrop-blur-md">
@@ -113,7 +114,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           )}
 
           {/* Micro Assurance Badges */}
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs font-medium text-slate-500 dark:text-slate-400">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-500" />
               <span>Zero Database Retention</span>
@@ -127,23 +128,96 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <span>Single Deterministic AI Call</span>
             </div>
           </div>
+
+          {/* ============================================================== */}
+          {/* FEATURED VISUAL: PRISM OF REASONING (Intuitive for Non-Tech)   */}
+          {/* ============================================================== */}
+          <div className="mt-12 sm:mt-16 mx-auto max-w-4xl">
+            <div className="relative rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/60 dark:bg-slate-900/60 p-2 sm:p-3 shadow-2xl backdrop-blur-md overflow-hidden group">
+              <div className="relative aspect-[16/9] w-full rounded-xl sm:rounded-2xl overflow-hidden bg-slate-950">
+                <img
+                  src="/images/thinklens_hero_prism.jpg"
+                  alt="ThinkLens Prism of Reasoning: Tangled human thoughts entering a glowing prism lens and exiting as clear, organized streams of light"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                  loading="eager"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-4 sm:p-6 text-left">
+                  <div className="max-w-xl">
+                    <span className="inline-block px-2.5 py-1 rounded-md bg-blue-500/80 text-white text-[11px] font-bold uppercase tracking-wider mb-1.5 backdrop-blur-sm">
+                      How It Works In Simple Terms
+                    </span>
+                    <h3 className="text-white font-bold text-sm sm:text-lg">
+                      Turn tangled dilemmas into structured mental clarity
+                    </h3>
+                    <p className="text-slate-300 text-xs sm:text-sm mt-1 line-clamp-2">
+                      You enter what you're thinking. ThinkLens acts like an optical prism: it refracts your rationale into explicit evidence, hidden assumptions, and blind spots—leaving the final decision entirely in your hands.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ============================================================== */}
       {/* COGNITIVE MIRROR INTERACTIVE PREVIEW CARD                      */}
       {/* ============================================================== */}
-      <section className="py-12 bg-slate-100/50 dark:bg-slate-900/30 border-y border-slate-200/80 dark:border-slate-800/80 relative">
+      <section className="py-14 bg-slate-100/50 dark:bg-slate-900/30 border-y border-slate-200/80 dark:border-slate-800/80 relative">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
-          <div className="text-center mb-9">
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
+          <div className="text-center mb-10">
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+              Visual Demonstration
+            </span>
+            <h2 className="mt-1 text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
               The ThinkLens Cognitive Mirror
             </h2>
-            <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-              How ThinkLens transforms ambiguous rationale into structured diagnostic clarity
+            <p className="mt-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
+              How ThinkLens transforms ambiguous rationale into structured diagnostic clarity anyone can understand
             </p>
           </div>
 
+          {/* Visual Concept Illustration Card */}
+          <div className="mb-10 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-sm">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+              <div className="lg:col-span-6 rounded-xl overflow-hidden shadow-md border border-slate-200/60 dark:border-slate-800/60">
+                <img
+                  src="/images/thinklens_cognitive_mirror.jpg"
+                  alt="A user looking at a digital cognitive mirror displaying organized cards for Facts, Assumptions, and Blind Spots"
+                  className="w-full h-auto object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <div className="lg:col-span-6 space-y-4">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-xs font-semibold">
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>The 3 Essential Columns</span>
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
+                  See what you actually know vs. what you just assume
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                  When facing a tough choice (a new job, moving cities, choosing a university), our minds mix up established facts with wishful assumptions. ThinkLens puts up a cognitive mirror:
+                </p>
+                <ul className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-500 font-bold">✓</span>
+                    <span><strong>Stated Facts:</strong> Verifiable truths you explicitly mentioned.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-500 font-bold">ℹ</span>
+                    <span><strong>Unstated Assumptions:</strong> Things you are taking for granted without proof.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-500 font-bold">⚠️</span>
+                    <span><strong>Hidden Blind Spots:</strong> Secondary impacts and dependencies you didn't account for.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive Comparison: Dilemma vs Output */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
             {/* Left: Raw Dilemma */}
             <div className="rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 p-5 sm:p-7 shadow-sm transition-all hover:shadow-md">
