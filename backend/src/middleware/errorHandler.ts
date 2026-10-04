@@ -60,6 +60,14 @@ export function errorHandler(
     return;
   }
 
+  // Handle CORS Forbidden
+  if (err instanceof Error && err.message === 'CORS_FORBIDDEN') {
+    res.status(403).json({
+      error: 'Access blocked by CORS policy. Please check ALLOWED_ORIGIN configuration.',
+    });
+    return;
+  }
+
   // Handle Body-parser payload too large or invalid JSON
   if (err && typeof err === 'object') {
     const errorObj = err as { type?: string; status?: number; statusCode?: number };

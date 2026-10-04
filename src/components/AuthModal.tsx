@@ -6,12 +6,14 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultMode?: 'signin' | 'signup';
+  onSuccess?: () => void;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
   defaultMode = 'signin',
+  onSuccess,
 }) => {
   const [mode, setMode] = useState<'signin' | 'signup'>(defaultMode);
   const [email, setEmail] = useState('');
@@ -35,6 +37,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         await signUpWithEmail(email, password);
       }
       onClose();
+      onSuccess?.();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Authentication failed';
       if (msg.includes('auth/invalid-credential') || msg.includes('auth/wrong-password')) {
@@ -57,6 +60,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     try {
       await signInWithGoogle();
       onClose();
+      onSuccess?.();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Google sign-in failed';
       if (!msg.includes('popup-closed-by-user')) {
@@ -72,8 +76,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     try {
       await signInAsGuest();
       onClose();
+      onSuccess?.();
     } catch {
       onClose();
+      onSuccess?.();
     } finally {
       setLoading(false);
     }

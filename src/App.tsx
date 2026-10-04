@@ -7,12 +7,14 @@ import { AnalysisResults } from './components/AnalysisResults';
 import { LoadingState } from './components/LoadingState';
 import { ErrorMessage } from './components/ErrorMessage';
 import { useAnalysis } from './hooks/useAnalysis';
+import { useAuth } from './context/AuthContext';
 import { DecisionInput } from './types/analysis';
 import { Sparkles, ArrowLeft, Shield } from 'lucide-react';
 
 export function App() {
   const [currentView, setCurrentView] = useState<'landing' | 'engine'>('landing');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { user } = useAuth();
 
   const { status, result, error, analyze, reset } = useAnalysis();
   const lastInputRef = useRef<DecisionInput | null>(null);
@@ -32,6 +34,22 @@ export function App() {
   const handleReset = () => {
     lastInputRef.current = null;
     reset();
+  };
+
+  // Route Guard: enforce that engine is strictly accessible only when authenticated
+  useEffect(() => {
+    if (!user && currentView === 'engine') {
+      setCurrentView('landing');
+      setIsAuthModalOpen(true);
+    }
+  }, [user, currentView]);
+
+  const handleNavigate = (view: 'landing' | 'engine') => {
+    if (view === 'engine' && !user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    setCurrentView(view);
   };
 
   useEffect(() => {
@@ -58,7 +76,7 @@ export function App() {
       {/* Navigation Bar */}
       <Navbar
         currentView={currentView}
-        onNavigate={(view) => setCurrentView(view)}
+        onNavigate={handleNavigate}
         onOpenAuth={() => setIsAuthModalOpen(true)}
       />
 
@@ -66,7 +84,13 @@ export function App() {
       <main id="main-content" className="flex-1 w-full">
         {currentView === 'landing' ? (
           <LandingPage
-            onStartEngine={() => setCurrentView('engine')}
+            onStartEngine={() => {
+              if (!user) {
+                setIsAuthModalOpen(true);
+              } else {
+                setCurrentView('engine');
+              }
+            }}
             onOpenAuth={() => setIsAuthModalOpen(true)}
           />
         ) : (
@@ -170,6 +194,10 @@ export function App() {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={() => {
+          setIsAuthModalOpen(false);
+          setCurrentView('engine');
+        }}
       />
     </div>
   );

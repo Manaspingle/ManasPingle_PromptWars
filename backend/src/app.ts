@@ -12,22 +12,28 @@ export function createApp(): Express {
   // Security headers via Helmet
   app.use(helmet());
 
-  // CORS configuration: strictly restricted to ALLOWED_ORIGIN (no wildcard in production)
+  // CORS configuration: flexible localhost in development, strict ALLOWED_ORIGIN in production
   const allowedOrigins = env.ALLOWED_ORIGIN.split(',').map((o) => o.trim());
   app.use(
     cors({
       origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps, curl, or server-to-server) only in non-production
+        // Allow requests with no origin (like mobile apps, curl, or server-to-server) in non-production
         if (!origin) {
           if (env.NODE_ENV === 'production') {
             return callback(new Error('CORS origin is required.'));
           }
           return callback(null, true);
         }
+        // In development, automatically allow localhost and 127.0.0.1 on any port
+        if (env.NODE_ENV !== 'production') {
+          if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+            return callback(null, true);
+          }
+        }
         if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
           return callback(null, true);
         }
-        return callback(new Error('Not allowed by CORS policy.'));
+        return callback(new Error('CORS_FORBIDDEN'));
       },
       methods: ['GET', 'POST', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],

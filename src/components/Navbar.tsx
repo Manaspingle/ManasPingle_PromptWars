@@ -31,12 +31,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           <ThinkLensLogo size="md" />
         </button>
 
-        {/* Center Nav Links */}
-        <nav className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200/60 dark:border-slate-800/60">
+        {/* Center Nav Links - Engine only visible when logged in */}
+        <nav className="flex items-center gap-1 bg-slate-100/80 dark:bg-slate-900/80 p-1 rounded-xl border border-slate-200/60 dark:border-slate-800/60 backdrop-blur-sm">
           <button
             type="button"
             onClick={() => onNavigate('landing')}
-            className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            className={`px-3 sm:px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
               currentView === 'landing'
                 ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -44,40 +44,43 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             Overview
           </button>
-          <button
-            type="button"
-            onClick={() => onNavigate('engine')}
-            className={`flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-              currentView === 'engine'
-                ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-            Reasoning Engine
-          </button>
+          {user && (
+            <button
+              type="button"
+              onClick={() => onNavigate('engine')}
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                currentView === 'engine'
+                  ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+              <span>Reasoning Engine</span>
+            </button>
+          )}
         </nav>
 
         {/* Right Action Icons & Auth */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           {/* Light/Dark Toggle */}
           <button
             type="button"
             onClick={toggleTheme}
-            className="p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="p-2 rounded-xl text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           >
-            {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+            {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
           </button>
 
-          {/* Engine Direct Button */}
-          {currentView === 'landing' && (
+          {/* Engine Direct Button (only when logged in) */}
+          {user && currentView === 'landing' && (
             <button
               type="button"
               onClick={() => onNavigate('engine')}
-              className="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm"
+              className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-500/20 transition-colors"
             >
-              Launch Engine
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Launch Engine</span>
             </button>
           )}
 

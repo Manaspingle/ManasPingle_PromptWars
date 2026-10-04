@@ -139,6 +139,8 @@ export async function analyzeDecision(
         errorMessage = errorData.error || 'Too many requests. Please slow down and try again in a minute.';
       } else if (response.status === 502 || response.status === 504) {
         errorMessage = errorData.error || 'The analysis service timed out or was temporarily unavailable. Please try again in a few moments.';
+      } else if (response.status === 500) {
+        errorMessage = errorData.error || 'The backend service encountered an issue. Please verify the backend is running on port 3000.';
       } else {
         errorMessage = errorData.error || errorData.message || errorMessage;
       }
@@ -147,6 +149,8 @@ export async function analyzeDecision(
         errorMessage = 'Too many requests. Please slow down and try again in a minute.';
       } else if (response.status === 502 || response.status === 504) {
         errorMessage = 'The analysis service timed out or was temporarily unavailable. Please try again.';
+      } else if (response.status === 500) {
+        errorMessage = 'Cannot connect to backend server (port 3000). Please run "npm run dev" in the backend directory.';
       } else {
         errorMessage = `Server error (${response.status}). Please try again later.`;
       }
