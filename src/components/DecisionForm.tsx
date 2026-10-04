@@ -187,18 +187,18 @@ export const DecisionForm: FC<DecisionFormProps> = ({
             <div className="flex items-baseline justify-between gap-2">
               <label
                 htmlFor={field.id}
-                className="text-sm font-semibold text-slate-800"
+                className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200"
               >
                 {field.label}
                 {field.required && (
-                  <span className="ml-1 text-slate-500" aria-hidden="true">
+                  <span className="ml-1 text-slate-400 dark:text-slate-500" aria-hidden="true">
                     (required)
                   </span>
                 )}
               </label>
               <span
                 id={counterId}
-                className="text-xs tabular-nums text-slate-400"
+                className="text-xs tabular-nums text-slate-400 dark:text-slate-500 font-mono"
               >
                 {value.length}/{limit}
               </span>
@@ -216,15 +216,15 @@ export const DecisionForm: FC<DecisionFormProps> = ({
               aria-describedby={`${counterId}${error ? ` ${errorId}` : ''}`}
               aria-invalid={error ? true : undefined}
               onChange={(e) => handleChange(field.id, e.target.value)}
-              className={`w-full resize-y rounded-md border bg-white px-3 py-2 text-sm leading-relaxed text-slate-800 placeholder:text-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-1 disabled:bg-slate-50 disabled:text-slate-400 ${
+              className={`w-full resize-y rounded-xl border bg-white dark:bg-slate-900/90 px-3.5 py-2.5 text-sm leading-relaxed text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 disabled:bg-slate-50 dark:disabled:bg-slate-950 disabled:text-slate-400 ${
                 error
-                  ? 'border-amber-400 focus-visible:ring-amber-400'
-                  : 'border-slate-300'
+                  ? 'border-amber-400 dark:border-amber-500 focus-visible:ring-amber-400'
+                  : 'border-slate-300 dark:border-slate-750'
               }`}
             />
 
             {error && (
-              <p id={errorId} className="text-sm text-amber-700">
+              <p id={errorId} className="text-xs text-amber-600 dark:text-amber-400">
                 {error}
               </p>
             )}
@@ -232,24 +232,24 @@ export const DecisionForm: FC<DecisionFormProps> = ({
         );
       })}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-2">
         <button
           type="button"
           onClick={handleFillSample}
           disabled={isLoading}
-          className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-850 px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <RotateCcw className="h-4 w-4" aria-hidden="true" />
-          Try an example
+          <RotateCcw className="h-4 w-4 text-slate-500 dark:text-slate-400" aria-hidden="true" />
+          <span>Try an example</span>
         </button>
 
         <button
           type="submit"
           disabled={isLoading}
-          className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-800 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 px-6 py-2.5 text-xs sm:text-sm font-bold text-white transition-all shadow-md shadow-blue-500/20 hover:shadow-blue-500/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Sparkles className="h-4 w-4" aria-hidden="true" />
-          {isLoading ? 'Analyzing…' : 'Analyze My Decision'}
+          <span>{isLoading ? 'Analyzing Reasoning…' : 'Audit My Decision'}</span>
         </button>
       </div>
     </form>

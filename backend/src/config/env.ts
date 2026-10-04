@@ -16,7 +16,7 @@ const nodeEnv = (process.env.NODE_ENV || 'development') as 'development' | 'prod
 const port = parseInt(process.env.PORT || '3000', 10);
 const allowedOrigin = process.env.ALLOWED_ORIGIN || 'http://localhost:5173';
 const geminiApiKey = process.env.GEMINI_API_KEY || '';
-const geminiModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const geminiModel = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
 
 // Fail fast in production or non-test environments if GEMINI_API_KEY is missing
 if (nodeEnv !== 'test' && !geminiApiKey) {
