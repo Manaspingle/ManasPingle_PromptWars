@@ -68,7 +68,11 @@ function isTransientError(error: unknown): boolean {
 /**
  * Executes a single generateContent call with a hard timeout.
  */
-async function callGeminiOnce(promptText: string, timeoutMs: number): Promise<string> {
+async function callGeminiOnce(
+  promptText: string,
+  timeoutMs: number,
+  modelName: string = env.GEMINI_MODEL
+): Promise<string> {
   const ai = getGenAIClient();
   const controller = new AbortController();
 
@@ -84,7 +88,7 @@ async function callGeminiOnce(promptText: string, timeoutMs: number): Promise<st
   try {
     const apiCallPromise = (async () => {
       const response = await ai.models.generateContent({
-        model: env.GEMINI_MODEL,
+        model: modelName,
         contents: promptText,
         config: {
           systemInstruction: SYSTEM_INSTRUCTION,
@@ -114,39 +118,55 @@ async function callGeminiOnce(promptText: string, timeoutMs: number): Promise<st
 
 /**
  * Generates reasoning audit for a validated user decision.
- * EXACTLY ONE generateContent call per request (with at most 1 retry on transient 429/503).
+ * EXACTLY ONE generateContent call per request (with smart failover on transient 503/429 spikes).
  */
 export async function generateReasoningAudit(
   input: ValidatedDecisionInput,
   timeoutMs = 25000
 ): Promise<BackendAnalysisResult> {
   const promptText = buildPrompt(input);
-  let rawText: string;
+  let rawText = '';
 
-  try {
+  // Candidate models: configured model first, followed by stable high-capacity fallback models
+  const candidateModels = [
+    env.GEMINI_MODEL,
+    'gemini-flash-latest',
+    'gemini-3.8-flash',
+  ].filter((m, idx, arr) => arr.indexOf(m) === idx);
+
+  let lastError: unknown = null;
+
+  for (let i = 0; i < candidateModels.length; i++) {
+    const currentModel = candidateModels[i];
     try {
-      rawText = await callGeminiOnce(promptText, timeoutMs);
-    } catch (firstErr) {
-      if (firstErr instanceof GeminiTimeoutError) {
-        throw firstErr;
+      rawText = await callGeminiOnce(promptText, timeoutMs, currentModel);
+      lastError = null;
+      break;
+    } catch (err: unknown) {
+      lastError = err;
+      if (err instanceof GeminiTimeoutError || err instanceof GeminiParseError) {
+        throw err;
       }
-      // Check if transient error eligible for single retry
-      if (isTransientError(firstErr)) {
-        // Wait 1 second before retry
-        await new Promise((res) => setTimeout(res, 1000));
-        rawText = await callGeminiOnce(promptText, timeoutMs);
-      } else {
-        throw firstErr;
+      // If error is transient (e.g. 503 High Demand / 429), try next candidate
+      if (isTransientError(err) && i < candidateModels.length - 1) {
+        console.warn(
+          `[GEMINI SPIKE] Model ${currentModel} returned 503/429. Automatically falling back to ${candidateModels[i + 1]}...`
+        );
+        await new Promise((res) => setTimeout(res, 600));
+        continue;
       }
+      break;
     }
-  } catch (err: unknown) {
-    if (err instanceof GeminiTimeoutError) {
-      throw err;
+  }
+
+  if (lastError || !rawText) {
+    console.error(
+      '[GEMINI UPSTREAM ERROR]:',
+      lastError instanceof Error ? lastError.message : String(lastError)
+    );
+    if (lastError instanceof GeminiTimeoutError || lastError instanceof GeminiParseError) {
+      throw lastError;
     }
-    if (err instanceof GeminiParseError) {
-      throw err;
-    }
-    // Mask raw upstream errors from the caller
     throw new GeminiUpstreamError(
       'The reasoning audit service encountered an upstream error. Please try again.'
     );
