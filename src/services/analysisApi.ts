@@ -140,7 +140,9 @@ export async function analyzeDecision(
       } else if (response.status === 502 || response.status === 504) {
         errorMessage = errorData.error || 'The analysis service timed out or was temporarily unavailable. Please try again in a few moments.';
       } else if (response.status === 500) {
-        errorMessage = errorData.error || 'The backend service encountered an issue. Please verify the backend is running on port 3000.';
+        errorMessage = errorData.error || (import.meta.env.DEV
+          ? 'Cannot connect to local backend (port 3000). Please run "npm run dev".'
+          : 'The reasoning audit service is processing your request. Please try again.');
       } else {
         errorMessage = errorData.error || errorData.message || errorMessage;
       }
@@ -150,7 +152,9 @@ export async function analyzeDecision(
       } else if (response.status === 502 || response.status === 504) {
         errorMessage = 'The analysis service timed out or was temporarily unavailable. Please try again.';
       } else if (response.status === 500) {
-        errorMessage = 'Cannot connect to backend server (port 3000). Please run "npm run dev" in the backend directory.';
+        errorMessage = import.meta.env.DEV
+          ? 'Cannot connect to backend server (port 3000). Please run "npm run dev".'
+          : 'Server temporarily unavailable. Please try again.';
       } else {
         errorMessage = `Server error (${response.status}). Please try again later.`;
       }
