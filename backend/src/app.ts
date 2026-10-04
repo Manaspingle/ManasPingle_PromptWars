@@ -59,8 +59,8 @@ export function createApp(): Express {
     next();
   });
 
-  // Health check endpoint
-  app.get('/api/health', (_req: Request, res: Response) => {
+  // Health check endpoint (supports both /api/health and /health)
+  app.get(['/api/health', '/health'], (_req: Request, res: Response) => {
     res.status(200).json({
       status: 'ok',
       service: 'ThinkLens Reasoning Audit Backend',
@@ -68,8 +68,8 @@ export function createApp(): Express {
     });
   });
 
-  // Reasoning analysis endpoint with IP rate limiter
-  app.use('/api/analyze', analyzeRateLimiter, analyzeRouter);
+  // Reasoning analysis endpoint with IP rate limiter (supports both /api/analyze and /analyze)
+  app.use(['/api/analyze', '/analyze'], analyzeRateLimiter, analyzeRouter);
 
   // Centralized Error Handling
   app.use(errorHandler);
